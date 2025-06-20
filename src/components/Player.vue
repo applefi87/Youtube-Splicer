@@ -1,55 +1,29 @@
 <template>
-  <div>
-    <div v-if="clips.length">
-      <div
-        id="player1"
-        class="w-full aspect-video mb-2"
-        v-show="currentPlayer === 0"
-      ></div>
-      <div
-        id="player2"
-        class="w-full aspect-video mb-2"
-        v-show="currentPlayer === 1"
-      ></div>
+  <div class="text-center">
+    <div id="player" class="w-full aspect-video mb-4"></div>
+    <div class="flex space-x-2 justify-center">
+      <input
+        v-model="url"
+        type="text"
+        placeholder="https://youtu.be/VIDEO_ID"
+        class="flex-1 border p-2"
+      />
+      <button @click="handleLoad" class="bg-blue-500 text-white px-4 py-2">加载视频</button>
     </div>
-    <div
-      v-else
-      class="w-full aspect-video mb-2 flex items-center justify-center bg-gray-200"
-    >
-      <span class="text-gray-500">Add a clip to begin</span>
-    </div>
-    <div v-if="clips.length" class="mb-2">
-      <button
-        @click="togglePlay"
-        class="px-3 py-1 bg-green-500 text-white rounded"
-      >
-        {{ isPlaying ? 'Pause' : 'Play' }}
-      </button>
-    </div>
-    <ProgressBar v-if="clips.length" />
   </div>
 </template>
 
 <script setup>
-import {
-  onMounted,
-  ref,
-  watch,
-  provide,
-  computed,
-  onBeforeUnmount,
-} from 'vue'
-import ProgressBar from './ProgressBar.vue';
-import { useClips } from '../stores/clips'
+import { ref, onMounted } from 'vue'
 
-const { clips, current } = useClips()
-const players = [ref(null), ref(null)]
-const currentPlayer = ref(0)
-const isPlaying = ref(false)
-let endChecker = null
+const url = ref('')
+let player = null
 
-const ytPlayer = computed(() => players[currentPlayer.value].value)
-provide('ytPlayer', ytPlayer)
+function extractVideoID(link) {
+  const reg = /(?:v=|\/)([0-9A-Za-z_-]{11})/
+  const m = link.match(reg)
+  return m ? m[1] : null
+}
 
 function loadScript() {
   return new Promise((resolve, reject) => {
@@ -61,119 +35,34 @@ function loadScript() {
     const tag = document.createElement('script')
     tag.src = 'https://www.youtube.com/iframe_api'
     tag.onerror = () => reject(new Error('Unable to load YouTube API'))
-    document.body.appendChild(tag)
+    document.head.appendChild(tag)
   })
 }
 
-function initPlayers() {
-  return new Promise((resolve) => {
-    let ready = 0
-    const done = () => {
-      ready += 1
-      if (ready === 2) resolve()
-    }
-    const opts = {
-      height: '360',
-      width: '640',
-      playerVars: { origin: location.origin },
-      events: { onReady: done },
-    }
-    players[0].value = new window.YT.Player('player1', opts)
-    players[1].value = new window.YT.Player('player2', opts)
+async function createPlayer() {
+  await loadScript()
+  player = new window.YT.Player('player', {
+    height: '360',
+    width: '100%',
+    videoId: '',
+    playerVars: { autoplay: 0, controls: 1 },
   })
 }
 
-function playSegment(idx) {
-  if (!Array.isArray(clips.value) || idx >= clips.value.length) return
-  const seg = clips.value[idx]
-  const now = currentPlayer.value
-  const next = 1 - now
-  const nowPlayer = players[now].value
-  const nextPlayer = players[next].value
-
-  current.value = idx
-
-  // display
-  currentPlayer.value = now
-
-  if (nowPlayer && nowPlayer.loadVideoById) {
-    nowPlayer.loadVideoById({
-      videoId: seg.id,
-      startSeconds: seg.start,
-      endSeconds: seg.end,
-    })
+function handleLoad() {
+  const id = extractVideoID(url.value.trim())
+  if (!id) {
+    alert('请输入有效的 YouTube 视频链接！')
+    return
   }
-
-  if (clips.value[idx + 1]) {
-    const nxt = clips.value[idx + 1]
-    if (nextPlayer && nextPlayer.cueVideoById) {
-      nextPlayer.cueVideoById({
-        videoId: nxt.id,
-        startSeconds: nxt.start,
-        endSeconds: nxt.end,
-      })
-    }
-  }
-
-  clearInterval(endChecker)
-  endChecker = setInterval(() => {
-    if (nowPlayer && nowPlayer.getCurrentTime) {
-      const t = nowPlayer.getCurrentTime()
-      if (t >= seg.end - 0.05) {
-        clearInterval(endChecker)
-        currentPlayer.value = next
-        playSegment(idx + 1)
-      }
-    }
-  }, 100)
-
-  if (isPlaying.value) {
-    nowPlayer.playVideo()
-  }
-}
-
-function togglePlay() {
-  const p = players[currentPlayer.value].value
-  if (!p) return
-  if (isPlaying.value) {
-    p.pauseVideo()
-    isPlaying.value = false
+  if (player && player.loadVideoById) {
+    player.loadVideoById(id)
   } else {
-    p.playVideo()
-    isPlaying.value = true
+    alert('播放器尚未初始化，请稍候再试。')
   }
 }
 
-watch(
-  () => clips.value.length,
-  async (len, oldLen) => {
-    if (len && !players[0].value) {
-      try {
-        await loadScript()
-        await initPlayers()
-        playSegment(0)
-      } catch (e) {
-        console.error(e)
-      }
-    } else if (!oldLen && len) {
-      playSegment(0)
-    }
-  }
-)
-
-onMounted(async () => {
-  if (Array.isArray(clips.value) && clips.value.length) {
-    try {
-      await loadScript()
-      await initPlayers()
-      playSegment(0)
-    } catch (e) {
-      console.error(e)
-    }
-  }
-})
-
-onBeforeUnmount(() => {
-  clearInterval(endChecker)
+onMounted(() => {
+  createPlayer().catch(console.error)
 })
 </script>
