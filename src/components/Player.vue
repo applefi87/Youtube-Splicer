@@ -65,18 +65,25 @@ function loadScript() {
 }
 
 function initPlayers() {
-  players[0].value = new window.YT.Player('player1', {
-    height: '360',
-    width: '640',
-  })
-  players[1].value = new window.YT.Player('player2', {
-    height: '360',
-    width: '640',
+  return new Promise((resolve) => {
+    let ready = 0
+    const done = () => {
+      ready += 1
+      if (ready === 2) resolve()
+    }
+    const opts = {
+      height: '360',
+      width: '640',
+      playerVars: { origin: location.origin },
+      events: { onReady: done },
+    }
+    players[0].value = new window.YT.Player('player1', opts)
+    players[1].value = new window.YT.Player('player2', opts)
   })
 }
 
 function playSegment(idx) {
-  if (idx >= clips.value.length) return
+  if (!Array.isArray(clips.value) || idx >= clips.value.length) return
   const seg = clips.value[idx]
   const now = currentPlayer.value
   const next = 1 - now
@@ -88,19 +95,23 @@ function playSegment(idx) {
   // display
   currentPlayer.value = now
 
-  nowPlayer.loadVideoById({
-    videoId: seg.id,
-    startSeconds: seg.start,
-    endSeconds: seg.end,
-  })
+  if (nowPlayer && nowPlayer.loadVideoById) {
+    nowPlayer.loadVideoById({
+      videoId: seg.id,
+      startSeconds: seg.start,
+      endSeconds: seg.end,
+    })
+  }
 
   if (clips.value[idx + 1]) {
     const nxt = clips.value[idx + 1]
-    nextPlayer.cueVideoById({
-      videoId: nxt.id,
-      startSeconds: nxt.start,
-      endSeconds: nxt.end,
-    })
+    if (nextPlayer && nextPlayer.cueVideoById) {
+      nextPlayer.cueVideoById({
+        videoId: nxt.id,
+        startSeconds: nxt.start,
+        endSeconds: nxt.end,
+      })
+    }
   }
 
   clearInterval(endChecker)
@@ -133,28 +144,22 @@ function togglePlay() {
 }
 
 watch(
-  clips,
-  async (newClips, oldClips) => {
-    if (Array.isArray(newClips) && newClips.length && !players[0].value) {
+  () => clips.value.length,
+  async (len, oldLen) => {
+    if (len && !players[0].value) {
       await loadScript()
-      initPlayers()
+      await initPlayers()
       playSegment(0)
-    } else if (
-      Array.isArray(oldClips) &&
-      !oldClips.length &&
-      Array.isArray(newClips) &&
-      newClips.length
-    ) {
+    } else if (!oldLen && len) {
       playSegment(0)
     }
-  },
-  { deep: true }
+  }
 )
 
 onMounted(async () => {
   if (Array.isArray(clips.value) && clips.value.length) {
     await loadScript()
-    initPlayers()
+    await initPlayers()
     playSegment(0)
   }
 })
