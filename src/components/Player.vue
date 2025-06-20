@@ -19,34 +19,19 @@ import { ref, onMounted } from 'vue'
 const url = ref('')
 let player = null
 
-function extractVideoID(link) {
-  const reg = /(?:v=|\/)([0-9A-Za-z_-]{11})/
-  const m = link.match(reg)
-  return m ? m[1] : null
-}
-
-function loadScript() {
-  return new Promise((resolve, reject) => {
-    if (window.YT && window.YT.Player) {
-      resolve()
-      return
-    }
-    window.onYouTubeIframeAPIReady = () => resolve()
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    tag.onerror = () => reject(new Error('Unable to load YouTube API'))
-    document.head.appendChild(tag)
-  })
-}
-
-async function createPlayer() {
-  await loadScript()
-  player = new window.YT.Player('player', {
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
     height: '360',
     width: '100%',
     videoId: '',
     playerVars: { autoplay: 0, controls: 1 },
   })
+}
+
+function extractVideoID(link) {
+  const reg = /(?:v=|\/)([0-9A-Za-z_-]{11})/
+  const m = link.match(reg)
+  return m ? m[1] : null
 }
 
 function handleLoad() {
@@ -63,6 +48,9 @@ function handleLoad() {
 }
 
 onMounted(() => {
-  createPlayer().catch(console.error)
+  const tag = document.createElement('script')
+  tag.src = 'https://www.youtube.com/iframe_api'
+  document.head.appendChild(tag)
+  window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady
 })
 </script>
