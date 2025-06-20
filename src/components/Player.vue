@@ -1,7 +1,13 @@
 <template>
   <div>
-    <div id="player" class="w-full aspect-video mb-2"></div>
-    <div class="mb-2">
+    <div v-if="clips.length" id="player" class="w-full aspect-video mb-2"></div>
+    <div
+      v-else
+      class="w-full aspect-video mb-2 flex items-center justify-center bg-gray-200"
+    >
+      <span class="text-gray-500">Add a clip to begin</span>
+    </div>
+    <div v-if="clips.length" class="mb-2">
       <button
         @click="togglePlay"
         class="px-3 py-1 bg-green-500 text-white rounded"
@@ -9,16 +15,16 @@
         {{ isPlaying ? 'Pause' : 'Play' }}
       </button>
     </div>
-    <ProgressBar />
+    <ProgressBar v-if="clips.length" />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch, provide } from 'vue';
+import { onMounted, ref, watch, provide } from 'vue'
 import ProgressBar from './ProgressBar.vue';
 import { useClips } from '../stores/clips';
 
-const { clips, current, next } = useClips();
+const { clips, current, next } = useClips()
 const player = ref(null);
 const ready = ref(false);
 const isPlaying = ref(false);
@@ -27,14 +33,14 @@ provide('ytPlayer', player);
 function loadScript() {
   return new Promise((resolve) => {
     if (window.YT) {
-      resolve();
+      resolve()
     } else {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      tag.onload = () => resolve();
-      document.body.appendChild(tag);
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      tag.onload = () => resolve()
+      document.body.appendChild(tag)
     }
-  });
+  })
 }
 
 function initPlayer() {
@@ -47,27 +53,27 @@ function initPlayer() {
       onReady,
       onStateChange,
     },
-  });
+  })
 }
 
 function onReady() {
-  ready.value = true;
+  ready.value = true
   if (clips.value.length) {
-    playClip(0);
+    playClip(0)
   }
 }
 
 function playClip(index) {
-  const clip = clips.value[index];
-  if (!clip || !player.value) return;
+  const clip = clips.value[index]
+  if (!clip || !player.value) return
   player.value.cueVideoById({
     videoId: clip.id,
     startSeconds: clip.start,
     endSeconds: clip.end,
-  });
-  current.value = index;
+  })
+  current.value = index
   if (isPlaying.value) {
-    player.value.playVideo();
+    player.value.playVideo()
   }
 }
 
@@ -91,14 +97,19 @@ function togglePlay() {
   }
 }
 
-watch(clips, (newClips, oldClips) => {
-  if (ready.value && !oldClips.length && newClips.length) {
-    playClip(0);
+watch(clips, async (newClips, oldClips) => {
+  if (newClips.length && !player.value) {
+    await loadScript()
+    initPlayer()
+  } else if (ready.value && !oldClips.length && newClips.length) {
+    playClip(0)
   }
-});
+})
 
 onMounted(async () => {
-  await loadScript();
-  initPlayer();
-});
+  if (clips.value.length) {
+    await loadScript()
+    initPlayer()
+  }
+})
 </script>
