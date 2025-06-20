@@ -17,7 +17,8 @@ const clipStore = useClips()
 const { clips } = storeToRefs(clipStore)
 const { setCurrent, reset } = clipStore
 
-const players = [ref(null), ref(null)]
+let players = [null, null]
+const playerReady = [false, false]
 const activePlayer = ref(null)
 let apiReady = false
 let endChecker = null
@@ -34,15 +35,34 @@ function loadAPI() {
 }
 
 function createPlayers() {
-  players[0].value = new YT.Player('player1', { height: '360', width: '100%', videoId: '' })
-  players[1].value = new YT.Player('player2', { height: '360', width: '100%', videoId: '' })
+  players[0] = new YT.Player('player1', {
+    height: '360',
+    width: '100%',
+    videoId: '',
+    playerVars: { origin: location.origin },
+    events: {
+      onReady: () => (playerReady[0] = true)
+    }
+  })
+  players[1] = new YT.Player('player2', {
+    height: '360',
+    width: '100%',
+    videoId: '',
+    playerVars: { origin: location.origin },
+    events: {
+      onReady: () => (playerReady[1] = true)
+    }
+  })
 }
 
 async function init() {
-  if (apiReady) return
-  await loadAPI()
-  apiReady = true
-  createPlayers()
+  if (!apiReady) {
+    await loadAPI()
+    apiReady = true
+  }
+  if (!players[0] || !players[1]) {
+    createPlayers()
+  }
 }
 
 function playSegment(idx) {
@@ -56,26 +76,36 @@ function playSegment(idx) {
   document.getElementById('player' + (now + 1)).style.display = 'block'
   document.getElementById('player' + (next + 1)).style.display = 'none'
 
-  players[now].value.loadVideoById({
-    videoId: seg.id,
-    startSeconds: seg.start,
-    endSeconds: seg.end
-  })
+  const curr = players[now]
+  if (curr && typeof curr.loadVideoById === 'function') {
+    curr.loadVideoById({
+      videoId: seg.id,
+      startSeconds: seg.start,
+      endSeconds: seg.end
+    })
+  } else {
+    console.error('Player not ready', curr)
+    return
+  }
 
   if (list[idx + 1]) {
     const nxt = list[idx + 1]
-    players[next].value.cueVideoById({
-      videoId: nxt.id,
-      startSeconds: nxt.start,
-      endSeconds: nxt.end
-    })
+    const nxtPlayer = players[next]
+    if (nxtPlayer && typeof nxtPlayer.cueVideoById === 'function') {
+      nxtPlayer.cueVideoById({
+        videoId: nxt.id,
+        startSeconds: nxt.start,
+        endSeconds: nxt.end
+      })
+    }
   }
 
-  activePlayer.value = players[now].value
+  activePlayer.value = curr
 
   clearInterval(endChecker)
   endChecker = setInterval(() => {
-    const t = players[now].value.getCurrentTime()
+    if (!curr.getCurrentTime) return
+    const t = curr.getCurrentTime()
     if (t >= seg.end - 0.05) {
       clearInterval(endChecker)
       currentPlayer.value = next
@@ -88,6 +118,14 @@ async function startPlaylist() {
   if (!clips.value.length) return
   clearInterval(endChecker)
   await init()
+  await new Promise(r => {
+    const check = setInterval(() => {
+      if (playerReady[0] && playerReady[1]) {
+        clearInterval(check)
+        r()
+      }
+    }, 50)
+  })
   reset()
   currentPlayer.value = 0
   playSegment(0)
