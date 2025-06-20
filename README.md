@@ -1,6 +1,6 @@
 # YouTube Splicer
 
-YouTube Splicer lets you combine several portions of different YouTube videos and play them back as one. Paste a YouTube link, set start and end times for each clip and arrange the order. The player automatically jumps from segment to segment. It uses the standard YouTube Iframe API and loads the requested clip when you press the **加载视频** button. On wide screens the player appears to the left with the clip list on the right, while on mobile the list drops below the player.
+YouTube Splicer lets you combine several portions of different YouTube videos and play them back as one. Paste a YouTube link, set start and end times for each clip and arrange the order. The player automatically jumps from segment to segment. It uses two hidden YouTube iframes to preload the next clip for a smooth handoff. Press **Play** to start the sequence. On wide screens the player appears to the left with the clip list on the right, while on mobile the list drops below the player.
 
 ## Usage
 

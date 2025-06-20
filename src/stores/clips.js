@@ -19,5 +19,13 @@ export const useClips = defineStore('clips', () => {
     }
   }
 
-  return { clips, current, add, remove, next };
+  function setCurrent(idx) {
+    current.value = idx
+  }
+
+  function reset() {
+    current.value = 0
+  }
+
+  return { clips, current, add, remove, next, setCurrent, reset };
 });
