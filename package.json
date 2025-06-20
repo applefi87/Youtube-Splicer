@@ -1,0 +1,25 @@
+{
+  "name": "youtube-splicer",
+  "version": "1.0.0",
+  "description": "YouTube Splicer is a lightweight front‑end app for merging multiple YouTube segments into a single playback. Simply paste any YouTube link, pick the start and end times you want, and arrange the clips in the desired order. The built‑in player then plays each section in sequence, automatically jumping from one segment to the next.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.2.0",
+    "@vitejs/plugin-vue": "^5.0.3"
+  }
+}
