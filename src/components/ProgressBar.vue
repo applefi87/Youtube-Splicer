@@ -5,29 +5,29 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject } from 'vue';
 import { useClips } from '../stores/clips';
 
 const { clips, current } = useClips();
 const percent = ref(0);
-let player;
+const player = inject('ytPlayer');
 
 onMounted(() => {
-  player = document.querySelector('#player');
   setInterval(() => {
     const clip = clips.value[current.value];
-    if (player && clip && player.getCurrentTime) {
-      const t = player.getCurrentTime();
+    if (player?.value && clip && player.value.getCurrentTime) {
+      const t = player.value.getCurrentTime();
       percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100;
     }
   }, 500);
 });
 
 function seek(e) {
+  if (!player?.value) return;
   const rect = e.currentTarget.getBoundingClientRect();
   const ratio = (e.clientX - rect.left) / rect.width;
   const clip = clips.value[current.value];
   const sec = clip.start + ratio * (clip.end - clip.start);
-  player.seekTo(sec, true);
+  player.value.seekTo(sec, true);
 }
 </script>

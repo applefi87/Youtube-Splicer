@@ -1,17 +1,28 @@
 <template>
   <div>
     <div id="player" class="w-full aspect-video mb-2"></div>
+    <div class="mb-2">
+      <button
+        @click="togglePlay"
+        class="px-3 py-1 bg-green-500 text-white rounded"
+      >
+        {{ isPlaying ? 'Pause' : 'Play' }}
+      </button>
+    </div>
     <ProgressBar />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch, provide } from 'vue';
 import ProgressBar from './ProgressBar.vue';
 import { useClips } from '../stores/clips';
 
 const { clips, current, next } = useClips();
-let player;
+const player = ref(null);
+const ready = ref(false);
+const isPlaying = ref(false);
+provide('ytPlayer', player);
 
 function loadScript() {
   return new Promise((resolve) => {
@@ -27,31 +38,37 @@ function loadScript() {
 }
 
 function initPlayer() {
-  player = new window.YT.Player('player', {
+  player.value = new window.YT.Player('player', {
     height: '360',
     width: '640',
     videoId: clips.value[0]?.id,
     playerVars: { controls: 0 },
     events: {
-      onReady: onReady,
-      onStateChange: onStateChange,
+      onReady,
+      onStateChange,
     },
   });
 }
 
 function onReady() {
-  playClip(0);
+  ready.value = true;
+  if (clips.value.length) {
+    playClip(0);
+  }
 }
 
 function playClip(index) {
   const clip = clips.value[index];
-  if (!clip) return;
-  player.loadVideoById({
+  if (!clip || !player.value) return;
+  player.value.cueVideoById({
     videoId: clip.id,
     startSeconds: clip.start,
     endSeconds: clip.end,
   });
   current.value = index;
+  if (isPlaying.value) {
+    player.value.playVideo();
+  }
 }
 
 function onStateChange(e) {
@@ -62,6 +79,23 @@ function onStateChange(e) {
     }
   }
 }
+
+function togglePlay() {
+  if (!player.value) return;
+  if (isPlaying.value) {
+    player.value.pauseVideo();
+    isPlaying.value = false;
+  } else {
+    player.value.playVideo();
+    isPlaying.value = true;
+  }
+}
+
+watch(clips, (newClips, oldClips) => {
+  if (ready.value && !oldClips.length && newClips.length) {
+    playClip(0);
+  }
+});
 
 onMounted(async () => {
   await loadScript();
