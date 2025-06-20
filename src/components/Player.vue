@@ -23,6 +23,7 @@ const player = ref(null);
 const ready = ref(false);
 const isPlaying = ref(false);
 provide('ytPlayer', player);
+provide('ytReady', ready);
 
 function loadScript() {
   return new Promise((resolve) => {
