@@ -1,13 +1,13 @@
 # YouTube Splicer
 
-YouTube Splicer lets you combine several portions of different YouTube videos and play them back as one. Paste any YouTube link, set the start and end time for each clip and arrange the order. The player will automatically jump from segment to segment so you get a seamless result.
+YouTube Splicer lets you combine several portions of different YouTube videos and play them back as one. Paste any YouTube link, set the start and end time for each clip and arrange the order. The player will automatically jump from segment to segment so you get a seamless result. The player sits at the top of the page while the clip editor appears to the right on wide screens or underneath on mobile.
 
 ## Usage
 
 1. **Add a clip** – Paste a YouTube URL. The app extracts the video ID and shows a thumbnail preview.
 2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
 3. **Arrange clips** – Add as many segments as you like. Drag to reorder or remove items from the list.
-4. **Player appears** – Once the first clip is added, a YouTube player shows up below the list.
+4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
 5. **Play** – Press play to watch the combined result directly in the page.
 6. **Share** – Generate a shareable link that encodes your clip list in the URL so others can view the same splice. A short‑link option can be added later.
 
