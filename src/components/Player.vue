@@ -20,7 +20,7 @@ import { useClips } from '../stores/clips';
 
 const { clips, current, next } = useClips();
 const player = ref(null);
-const ready = ref(false);
+const isReady = ref(false);
 const isPlaying = ref(false);
 provide('ytPlayer', player);
 
@@ -41,7 +41,6 @@ function initPlayer() {
   player.value = new window.YT.Player('player', {
     height: '360',
     width: '640',
-    videoId: clips.value[0]?.id,
     playerVars: { controls: 0 },
     events: {
       onReady,
@@ -51,21 +50,25 @@ function initPlayer() {
 }
 
 function onReady() {
-  ready.value = true;
+  isReady.value = true;
   if (clips.value.length) {
     playClip(0);
   }
 }
 
 function playClip(index) {
+  current.value = index;
+  if (!isReady.value || !player.value) return;
+
   const clip = clips.value[index];
-  if (!clip || !player.value) return;
+  if (!clip) return;
+
   player.value.cueVideoById({
     videoId: clip.id,
     startSeconds: clip.start,
     endSeconds: clip.end,
   });
-  current.value = index;
+
   if (isPlaying.value) {
     player.value.playVideo();
   }
@@ -92,7 +95,7 @@ function togglePlay() {
 }
 
 watch(clips, (newClips, oldClips) => {
-  if (ready.value && !oldClips.length && newClips.length) {
+  if (isReady.value && !oldClips.length && newClips.length) {
     playClip(0);
   }
 });
