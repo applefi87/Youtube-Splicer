@@ -1,6 +1,17 @@
 <template>
   <div>
-    <div v-if="clips.length" id="player" class="w-full aspect-video mb-2"></div>
+    <div v-if="clips.length">
+      <div
+        id="player1"
+        class="w-full aspect-video mb-2"
+        v-show="currentPlayer === 0"
+      ></div>
+      <div
+        id="player2"
+        class="w-full aspect-video mb-2"
+        v-show="currentPlayer === 1"
+      ></div>
+    </div>
     <div
       v-else
       class="w-full aspect-video mb-2 flex items-center justify-center bg-gray-200"
@@ -20,15 +31,25 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, provide } from 'vue'
+import {
+  onMounted,
+  ref,
+  watch,
+  provide,
+  computed,
+  onBeforeUnmount,
+} from 'vue'
 import ProgressBar from './ProgressBar.vue';
-import { useClips } from '../stores/clips';
+import { useClips } from '../stores/clips'
 
-const { clips, current, next } = useClips()
-const player = ref(null);
-const ready = ref(false);
-const isPlaying = ref(false);
-provide('ytPlayer', player);
+const { clips, current } = useClips()
+const players = [ref(null), ref(null)]
+const currentPlayer = ref(0)
+const isPlaying = ref(false)
+let endChecker = null
+
+const ytPlayer = computed(() => players[currentPlayer.value].value)
+provide('ytPlayer', ytPlayer)
 
 function loadScript() {
   return new Promise((resolve) => {
@@ -43,82 +64,102 @@ function loadScript() {
   })
 }
 
-function initPlayer() {
-  const firstId = Array.isArray(clips.value) && clips.value.length
-    ? clips.value[0].id
-    : ''
-  player.value = new window.YT.Player('player', {
+function initPlayers() {
+  players[0].value = new window.YT.Player('player1', {
     height: '360',
     width: '640',
-    videoId: firstId,
-    playerVars: { controls: 0 },
-    events: {
-      onReady,
-      onStateChange,
-    },
+  })
+  players[1].value = new window.YT.Player('player2', {
+    height: '360',
+    width: '640',
   })
 }
 
-function onReady() {
-  ready.value = true
-  if (clips.value.length) {
-    playClip(0)
-  }
-}
+function playSegment(idx) {
+  if (idx >= clips.value.length) return
+  const seg = clips.value[idx]
+  const now = currentPlayer.value
+  const next = 1 - now
+  const nowPlayer = players[now].value
+  const nextPlayer = players[next].value
 
-function playClip(index) {
-  const clip = clips.value[index]
-  if (!clip || !player.value) return
-  player.value.cueVideoById({
-    videoId: clip.id,
-    startSeconds: clip.start,
-    endSeconds: clip.end,
+  current.value = idx
+
+  // display
+  currentPlayer.value = now
+
+  nowPlayer.loadVideoById({
+    videoId: seg.id,
+    startSeconds: seg.start,
+    endSeconds: seg.end,
   })
-  current.value = index
-  if (isPlaying.value) {
-    player.value.playVideo()
-  }
-}
 
-function onStateChange(e) {
-  if (e.data === window.YT.PlayerState.ENDED) {
-    const nextIndex = current.value + 1;
-    if (nextIndex < clips.value.length) {
-      playClip(nextIndex);
+  if (clips.value[idx + 1]) {
+    const nxt = clips.value[idx + 1]
+    nextPlayer.cueVideoById({
+      videoId: nxt.id,
+      startSeconds: nxt.start,
+      endSeconds: nxt.end,
+    })
+  }
+
+  clearInterval(endChecker)
+  endChecker = setInterval(() => {
+    if (nowPlayer && nowPlayer.getCurrentTime) {
+      const t = nowPlayer.getCurrentTime()
+      if (t >= seg.end - 0.05) {
+        clearInterval(endChecker)
+        currentPlayer.value = next
+        playSegment(idx + 1)
+      }
     }
+  }, 100)
+
+  if (isPlaying.value) {
+    nowPlayer.playVideo()
   }
 }
 
 function togglePlay() {
-  if (!player.value) return;
+  const p = players[currentPlayer.value].value
+  if (!p) return
   if (isPlaying.value) {
-    player.value.pauseVideo();
-    isPlaying.value = false;
+    p.pauseVideo()
+    isPlaying.value = false
   } else {
-    player.value.playVideo();
-    isPlaying.value = true;
+    p.playVideo()
+    isPlaying.value = true
   }
 }
 
-watch(clips, async (newClips, oldClips) => {
-  if (Array.isArray(newClips) && newClips.length && !player.value) {
-    await loadScript()
-    initPlayer()
-  } else if (
-    ready.value &&
-    Array.isArray(oldClips) &&
-    !oldClips.length &&
-    Array.isArray(newClips) &&
-    newClips.length
-  ) {
-    playClip(0)
-  }
-})
+watch(
+  clips,
+  async (newClips, oldClips) => {
+    if (Array.isArray(newClips) && newClips.length && !players[0].value) {
+      await loadScript()
+      initPlayers()
+      playSegment(0)
+    } else if (
+      Array.isArray(oldClips) &&
+      !oldClips.length &&
+      Array.isArray(newClips) &&
+      newClips.length
+    ) {
+      playSegment(0)
+    }
+  },
+  { deep: true }
+)
 
 onMounted(async () => {
   if (Array.isArray(clips.value) && clips.value.length) {
     await loadScript()
-    initPlayer()
+    initPlayers()
+    playSegment(0)
   }
+})
+
+onBeforeUnmount(() => {
+  clearInterval(endChecker)
 })
 </script>

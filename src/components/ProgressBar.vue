@@ -5,15 +5,16 @@
 </template>
 
 <script setup>
-import { onMounted, ref, inject } from 'vue';
+import { onMounted, ref, inject, onBeforeUnmount } from 'vue';
 import { useClips } from '../stores/clips';
 
 const { clips, current } = useClips();
 const percent = ref(0);
 const player = inject('ytPlayer');
+let timer = null;
 
 onMounted(() => {
-  setInterval(() => {
+  timer = setInterval(() => {
     const list = Array.isArray(clips.value) ? clips.value : []
     const clip = list[current.value]
     if (player?.value && clip && player.value.getCurrentTime) {
@@ -21,6 +22,10 @@ onMounted(() => {
       percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100
     }
   }, 500)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
 })
 
 function seek(e) {
