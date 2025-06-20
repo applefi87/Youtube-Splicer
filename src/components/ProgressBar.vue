@@ -14,20 +14,24 @@ const player = inject('ytPlayer');
 
 onMounted(() => {
   setInterval(() => {
-    const clip = clips.value[current.value];
+    const list = Array.isArray(clips.value) ? clips.value : []
+    const clip = list[current.value]
     if (player?.value && clip && player.value.getCurrentTime) {
-      const t = player.value.getCurrentTime();
-      percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100;
+      const t = player.value.getCurrentTime()
+      percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100
     }
-  }, 500);
-});
+  }, 500)
+})
 
 function seek(e) {
   if (!player?.value) return;
   const rect = e.currentTarget.getBoundingClientRect();
   const ratio = (e.clientX - rect.left) / rect.width;
-  const clip = clips.value[current.value];
-  const sec = clip.start + ratio * (clip.end - clip.start);
-  player.value.seekTo(sec, true);
+  const list = Array.isArray(clips.value) ? clips.value : []
+  const clip = list[current.value]
+  if (clip) {
+    const sec = clip.start + ratio * (clip.end - clip.start)
+    player.value.seekTo(sec, true)
+  }
 }
 </script>

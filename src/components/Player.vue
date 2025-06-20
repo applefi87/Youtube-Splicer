@@ -44,10 +44,13 @@ function loadScript() {
 }
 
 function initPlayer() {
+  const firstId = Array.isArray(clips.value) && clips.value.length
+    ? clips.value[0].id
+    : ''
   player.value = new window.YT.Player('player', {
     height: '360',
     width: '640',
-    videoId: clips.value[0]?.id,
+    videoId: firstId,
     playerVars: { controls: 0 },
     events: {
       onReady,
@@ -98,16 +101,22 @@ function togglePlay() {
 }
 
 watch(clips, async (newClips, oldClips) => {
-  if (newClips.length && !player.value) {
+  if (Array.isArray(newClips) && newClips.length && !player.value) {
     await loadScript()
     initPlayer()
-  } else if (ready.value && !oldClips.length && newClips.length) {
+  } else if (
+    ready.value &&
+    Array.isArray(oldClips) &&
+    !oldClips.length &&
+    Array.isArray(newClips) &&
+    newClips.length
+  ) {
     playClip(0)
   }
 })
 
 onMounted(async () => {
-  if (clips.value.length) {
+  if (Array.isArray(clips.value) && clips.value.length) {
     await loadScript()
     initPlayer()
   }
