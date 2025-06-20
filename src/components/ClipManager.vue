@@ -29,11 +29,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useClips } from '../stores/clips';
+import { storeToRefs } from 'pinia';
 
 const url = ref('');
 const start = ref(0);
 const end = ref(0);
-const { clips, add, remove } = useClips();
+const clipStore = useClips();
+const { clips } = storeToRefs(clipStore);
+const { add, remove } = clipStore;
 
 function extractId(link) {
   try {

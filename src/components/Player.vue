@@ -11,8 +11,11 @@
 import { ref, onMounted, watch, provide } from 'vue'
 import ProgressBar from './ProgressBar.vue'
 import { useClips } from '../stores/clips'
+import { storeToRefs } from 'pinia'
 
-const { clips, setCurrent, reset } = useClips()
+const clipStore = useClips()
+const { clips } = storeToRefs(clipStore)
+const { setCurrent, reset } = clipStore
 
 const players = [ref(null), ref(null)]
 const activePlayer = ref(null)

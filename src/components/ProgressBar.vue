@@ -7,8 +7,10 @@
 <script setup>
 import { onMounted, ref, inject, onBeforeUnmount } from 'vue';
 import { useClips } from '../stores/clips';
+import { storeToRefs } from 'pinia';
 
-const { clips, current } = useClips();
+const clipStore = useClips();
+const { clips, current } = storeToRefs(clipStore);
 const percent = ref(0);
 const player = inject('ytPlayer');
 let timer = null;
