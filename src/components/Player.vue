@@ -32,14 +32,14 @@ provide('ytPlayer', player);
 
 function loadScript() {
   return new Promise((resolve) => {
-    if (window.YT) {
+    if (window.YT && window.YT.Player) {
       resolve()
-    } else {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      tag.onload = () => resolve()
-      document.body.appendChild(tag)
+      return
     }
+    window.onYouTubeIframeAPIReady = () => resolve()
+    const tag = document.createElement('script')
+    tag.src = 'https://www.youtube.com/iframe_api'
+    document.body.appendChild(tag)
   })
 }
 

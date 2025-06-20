@@ -41,6 +41,10 @@ npm run dev
 
 Run `npm run build` to create a production build.
 
+> **Note**
+> The player loads the YouTube Iframe API from `youtube.com`. Make sure your
+> network connection allows access to that domain or the videos will not play.
+
 ## Project Structure
 
 The repository follows the default Vite layout. The top level contains
