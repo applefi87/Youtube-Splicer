@@ -73,3 +73,4 @@ The project implements the features outlined in the original requirements:
 - **響應式設計** – layout adapts from desktop to mobile.
 
 
+A simple standalone demo is available in demo.html for quickly testing the YouTube Iframe API.

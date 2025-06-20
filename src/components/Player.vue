@@ -52,7 +52,7 @@ const ytPlayer = computed(() => players[currentPlayer.value].value)
 provide('ytPlayer', ytPlayer)
 
 function loadScript() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (window.YT && window.YT.Player) {
       resolve()
       return
@@ -60,6 +60,7 @@ function loadScript() {
     window.onYouTubeIframeAPIReady = () => resolve()
     const tag = document.createElement('script')
     tag.src = 'https://www.youtube.com/iframe_api'
+    tag.onerror = () => reject(new Error('Unable to load YouTube API'))
     document.body.appendChild(tag)
   })
 }
@@ -147,9 +148,13 @@ watch(
   () => clips.value.length,
   async (len, oldLen) => {
     if (len && !players[0].value) {
-      await loadScript()
-      await initPlayers()
-      playSegment(0)
+      try {
+        await loadScript()
+        await initPlayers()
+        playSegment(0)
+      } catch (e) {
+        console.error(e)
+      }
     } else if (!oldLen && len) {
       playSegment(0)
     }
@@ -158,9 +163,13 @@ watch(
 
 onMounted(async () => {
   if (Array.isArray(clips.value) && clips.value.length) {
-    await loadScript()
-    await initPlayers()
-    playSegment(0)
+    try {
+      await loadScript()
+      await initPlayers()
+      playSegment(0)
+    } catch (e) {
+      console.error(e)
+    }
   }
 })
 
