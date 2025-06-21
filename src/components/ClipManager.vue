@@ -7,11 +7,11 @@
       </div>
       <div>
         <label class="block text-sm">Start (s)</label>
-        <input v-model.number="start" type="number" min="0" step="1" class="border p-1 w-20" />
+        <input v-model.number="start" type="number" min="1" step="1" class="border p-1 w-20" />
       </div>
       <div>
         <label class="block text-sm">End (s)</label>
-        <input v-model.number="end" type="number" min="0" step="1" class="border p-1 w-20" />
+        <input v-model.number="end" type="number" min="1" step="1" class="border p-1 w-20" />
       </div>
       <button type="submit" class="bg-blue-500 text-white px-2 py-1">Add</button>
     </form>
@@ -28,17 +28,17 @@
       >
         <span class="cursor-move text-gray-500 group-hover:text-gray-700">&#x2630;</span>
         <img :src="thumb(clip.id)" class="w-20 h-12 object-cover" />
-        <input v-model="clip.id" class="border p-1 w-28" />
+        <input v-model="clip.id" @blur="clip.id = urlToId(clip.id)" class="border p-1 w-28" />
         <label class="text-sm">Start:</label>
-        <input v-model.number="clip.start" type="number" min="0" step="1" class="border p-1 w-16" />
+        <input v-model.number="clip.start" type="number" min="1" step="1" class="border p-1 w-16" />
         <label class="text-sm">End:</label>
-        <input v-model.number="clip.end" type="number" min="0" step="1" class="border p-1 w-16" />
+        <input v-model.number="clip.end" type="number" min="1" step="1" :class="['border p-1 w-16', clip.end <= clip.start ? 'border-red-500' : '']" />
         <button @click="removeClip(i)" class="text-red-500">x</button>
       </li>
     </ul>
 
     <div v-if="editingClips.length" class="mt-2 space-x-2">
-      <button @click="applyChanges" class="bg-blue-500 text-white px-2 py-1">Save</button>
+      <button @click="applyChanges" :disabled="invalid" class="bg-blue-500 text-white px-2 py-1 disabled:opacity-50">Save</button>
       <button @click="revertChanges" class="bg-gray-300 px-2 py-1">Back</button>
     </div>
 
@@ -57,10 +57,11 @@
 import { ref, computed, watch, inject } from 'vue';
 import { useClips } from '../stores/clips';
 import { storeToRefs } from 'pinia';
+import { urlToId } from '../utils/youtube';
 
 const url = ref('');
-const start = ref(0);
-const end = ref(0);
+const start = ref(1);
+const end = ref(1);
 const clipStore = useClips();
 const { clips } = storeToRefs(clipStore);
 const { encode, setClips } = clipStore;
@@ -74,37 +75,26 @@ const shareUrl = computed(() => {
   return `${location.origin}${location.pathname}?data=${encode()}`;
 });
 
+const invalid = computed(() => {
+  return editingClips.value.some(c => c.start < 1 || c.end < 1 || c.end <= c.start);
+});
+
 watch(clips, (n) => {
   editingClips.value = JSON.parse(JSON.stringify(n));
 });
 
-function extractId(link) {
-  try {
-    const u = new URL(link);
-    if (u.hostname.includes('youtu.be')) {
-      return u.pathname.slice(1);
-    }
-    if (u.searchParams.get('v')) {
-      return u.searchParams.get('v');
-    }
-    const parts = u.pathname.split('/');
-    return parts[parts.length - 1];
-  } catch (e) {
-    return link.trim();
-  }
-}
 
 function thumb(id) {
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 }
 
 function addClip() {
-  const id = extractId(url.value);
-  if (id && end.value - start.value >= 1 && end.value > start.value) {
+  const id = urlToId(url.value);
+  if (id && end.value - start.value >= 1 && end.value > start.value && start.value >= 1 && end.value >= 1) {
     editingClips.value.push({ id, start: start.value, end: end.value });
     url.value = '';
-    start.value = 0;
-    end.value = 0;
+    start.value = 1;
+    end.value = 1;
   }
 }
 
@@ -130,7 +120,9 @@ function copyLink() {
 }
 
 function applyChanges() {
-  const cleaned = editingClips.value.filter(c => c.end - c.start >= 1);
+  const cleaned = editingClips.value
+    .map(c => ({ id: urlToId(c.id), start: c.start, end: c.end }))
+    .filter(c => c.end - c.start >= 1 && c.start >= 1 && c.end >= 1 && c.end > c.start);
   setClips(cleaned);
   editingClips.value = JSON.parse(JSON.stringify(cleaned));
   if (startPlaylist) startPlaylist();

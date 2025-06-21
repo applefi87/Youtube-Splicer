@@ -4,8 +4,8 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 
 ## Usage
 
-1. **Add a clip** – Paste a YouTube URL or just the video ID. A thumbnail preview will appear.
-2. **Set the range** – Enter the start and end times in seconds for the portion you want to include. Each clip must be at least one second long.
+1. **Add a clip** – Paste a YouTube URL or just the ID. The app extracts the ID automatically and shows a thumbnail preview.
+2. **Set the range** – Enter start and end times in seconds. Both must be at least 1 and the end must exceed the start by at least one second.
 3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items. Use **Save** to apply changes or **Back** to restore the current playlist.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
 5. **Play** – Use the Play button to watch the combined result or Pause to stop. Skip forward or back with Next/Prev buttons. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking. If you scrub the built‑in YouTube bar, the custom progress pauses and resumes automatically once the video starts playing again.
@@ -24,8 +24,8 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 
 ### Features
 
-- **Video input and management** – accepts either full YouTube URLs or bare video IDs and shows thumbnails.
-- **Segment selection** – start/end times with validation so end must be greater than start and each clip lasts at least one second.
+- **Video input and management** – accepts URLs or IDs, automatically stores only the ID and shows thumbnails.
+- **Segment selection** – start/end fields require a minimum of one second and the end must be greater than the start.
 - **Playback sequencing** – uses the YouTube Iframe API to queue clips and automatically jump to the next section when one finishes.
 - **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
 - **Skip controls** – Next and Prev buttons jump between clips. The Prev button resets the current clip on first press and moves back if pressed again within two seconds.
@@ -60,6 +60,7 @@ the `src/` directory:
 - `components/` – smaller UI pieces
 - `assets/` – CSS and other static files
 - `stores/` – Pinia store modules
+- `utils/` – helpers such as `youtube.js` for converting between URLs and video IDs
 
 Keeping the code under `src/` helps separate source from configuration and
 build output while still allowing the README to live in the project root.
