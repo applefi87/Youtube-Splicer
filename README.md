@@ -4,12 +4,12 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 
 ## Usage
 
-1. **Add a clip** – Paste a YouTube URL. The app extracts the video ID and shows a thumbnail preview.
-2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
-3. **Arrange clips** – Add as many segments as you like. Drag to reorder or remove items from the list.
+1. **Add a clip** – Paste a YouTube URL or just the ID. The app extracts the ID automatically and shows a thumbnail preview.
+2. **Set the range** – Enter start and end times in seconds. Both must be at least 1 and the end must exceed the start by at least one second.
+3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items. Use **Save** (above the share link) to apply changes or **Back** to restore the current playlist. Saving restarts the player.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
-5. **Play** – Press play to watch the combined result directly in the page.
-6. **Share** – Generate a shareable link that encodes your clip list in the URL so others can view the same splice. A short‑link option can be added later.
+5. **Play** – Use the Play button to watch the combined result or Pause to stop. Skip forward or back with Next/Prev buttons. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. Hovering or dragging shows a thumbnail preview of that moment. If you scrub the built‑in YouTube bar, the custom progress pauses and resumes automatically once the video starts playing again.
+6. **Share** – A readonly input field with a copy button encodes your clips into the URL. A short‑link option can be added later.
 
 This project is built with Vite, Vue 3 and Tailwind CSS. Clips are stored in an array using the format:
 
@@ -24,11 +24,16 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 
 ### Features
 
-- **Video input and management** – accepts different forms of YouTube URLs and shows thumbnails.
-- **Segment selection** – start/end times with validation so end must be greater than start.
+- **Video input and management** – accepts URLs or IDs, automatically stores only the ID and shows thumbnails.
+- **Segment selection** – start/end fields require a minimum of one second and the end must be greater than the start.
 - **Playback sequencing** – uses the YouTube Iframe API to queue clips and automatically jump to the next section when one finishes.
-- **Progress bar** – displays a bar with markers showing where each segment starts and allows seeking.
-- **Sharing** – generates a link containing your clip list so others can view the same splice.
+- **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
+- **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview that appears while hovering or dragging.
+- **Skip controls** – Next and Prev buttons jump between clips. The Prev button resets the current clip on first press and moves back if pressed again within two seconds.
+- **Custom progress** – the bar pauses when the YouTube progress is dragged so manual seeking doesn't affect splice playback and resumes once the video plays.
+- **Save or revert** – edit clips freely and press **Save** to restart the playlist or **Back** to discard changes.
+- **Sharing** – generates a link containing your clip list so others can view the same splice or load it directly.
+- **Drag to reorder** – rearrange clips in the list using standard drag-and-drop.
 
 ### Development
 
@@ -56,6 +61,7 @@ the `src/` directory:
 - `components/` – smaller UI pieces
 - `assets/` – CSS and other static files
 - `stores/` – Pinia store modules
+- `utils/` – helpers such as `youtube.js` for converting between URLs and video IDs
 
 Keeping the code under `src/` helps separate source from configuration and
 build output while still allowing the README to live in the project root.
@@ -67,7 +73,7 @@ The project implements the features outlined in the original requirements:
 - **影片輸入與管理** – paste various YouTube URL formats; the ID is extracted and a thumbnail is shown.
 - **區段設定** – start/end inputs with validation and an option to reset to the full video length.
 - **播放拼接** – clips play sequentially using the Iframe API.
-- **播放控制與進度條標記** – basic controls and a progress bar marked with clip boundaries.
+- **播放控制與進度條標記** – basic controls with a progress bar, draggable handle and thumbnail preview.
 - **預覽縮圖顯示** – video thumbnails appear in the clip list.
 - **分享機制** – encoded parameter URLs, with short links available via a simple API.
 - **響應式設計** – layout adapts from desktop to mobile.
