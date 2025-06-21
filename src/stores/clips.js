@@ -5,6 +5,7 @@ export const useClips = defineStore('clips', () => {
   const clips = ref([]);
   const current = ref(0);
   const progress = ref(0);
+  const tracking = ref(true);
 
   function move(oldIndex, newIndex) {
     if (oldIndex === newIndex) return;
@@ -56,33 +57,16 @@ export const useClips = defineStore('clips', () => {
     }
   }
 
-  function saveLocal() {
-    try {
-      localStorage.setItem('ytsplicer', encode());
-    } catch (e) {
-      console.error('Failed to save playlist', e);
-    }
-  }
-
-  function loadLocal() {
-    const str = localStorage.getItem('ytsplicer');
-    if (str) {
-      loadEncoded(str);
-    }
-  }
-
   function setProgress(sec) {
     progress.value = sec;
-    try {
-      localStorage.setItem('ytsplicer-progress', String(sec));
-    } catch (e) {
-      console.error('Failed to save progress', e);
-    }
   }
 
-  function loadProgress() {
-    const s = localStorage.getItem('ytsplicer-progress');
-    if (s) progress.value = Number(s) || 0;
+  function pauseTracking() {
+    tracking.value = false;
+  }
+
+  function resumeTracking() {
+    tracking.value = true;
   }
 
   const totalDuration = () =>
@@ -109,12 +93,12 @@ export const useClips = defineStore('clips', () => {
     move,
     encode,
     loadEncoded,
-    saveLocal,
-    loadLocal,
     progress,
     setProgress,
-    loadProgress,
+    pauseTracking,
+    resumeTracking,
     totalDuration,
-    offsets
+    offsets,
+    tracking
   };
 });

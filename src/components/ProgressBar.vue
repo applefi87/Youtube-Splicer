@@ -24,13 +24,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, inject, onBeforeUnmount } from 'vue';
+import { onMounted, ref, inject, onBeforeUnmount, watch } from 'vue';
 import { useClips } from '../stores/clips';
 import { storeToRefs } from 'pinia';
 
 const clipStore = useClips();
-const { clips, current } = storeToRefs(clipStore);
-const { offsets, totalDuration, setProgress } = clipStore;
+const { clips, current, progress, tracking } = storeToRefs(clipStore);
+const { offsets, totalDuration, setProgress, pauseTracking, resumeTracking } = clipStore;
 const percent = ref(0);
 const player = inject('ytPlayer');
 const playSegment = inject('playSegment');
@@ -38,15 +38,18 @@ const bar = ref(null);
 const preview = ref({ show: false, left: '0%', img: '', time: '' });
 let dragging = false;
 let timer = null;
+watch(progress, val => {
+  percent.value = (val / totalDuration()) * 100;
+});
 
 onMounted(() => {
   timer = setInterval(() => {
+    if (!tracking.value) return
     const list = Array.isArray(clips.value) ? clips.value : []
     const clip = list[current.value]
     if (player?.value && clip && player.value.getCurrentTime) {
       const t = player.value.getCurrentTime()
       const elapsed = offsets()[current.value] + (t - clip.start)
-      percent.value = (elapsed / totalDuration()) * 100
       setProgress(elapsed)
     }
   }, 500)
@@ -89,6 +92,7 @@ function dragStart(e) {
   if (player?.value && player.value.pauseVideo) {
     player.value.pauseVideo()
   }
+  pauseTracking()
   updatePreview(e.clientX)
   document.addEventListener('mousemove', dragMove)
   document.addEventListener('mouseup', dragEnd)
@@ -131,6 +135,11 @@ function seekAt(ratio, play = true) {
         player.value.pauseVideo()
       }
       setProgress(target)
+      if (play) {
+        resumeTracking()
+      } else {
+        pauseTracking()
+      }
       break
     }
     acc += dur

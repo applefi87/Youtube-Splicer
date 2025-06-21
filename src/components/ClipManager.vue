@@ -37,11 +37,9 @@
       </li>
     </ul>
 
-    <button
-      v-if="clips.length"
-      @click="saveLocal"
-      class="bg-green-500 text-white px-2 py-1 mt-4"
-    >Save</button>
+    <div v-if="clips.length" class="mt-4 text-sm text-gray-500">
+      Playlist changes are encoded into the share link below.
+    </div>
 
     <div v-if="shareUrl" class="mt-2 flex items-center space-x-2">
       <input ref="shareInput" type="text" readonly :value="shareUrl" class="flex-1 border p-1" />
@@ -60,7 +58,7 @@ const start = ref(0);
 const end = ref(0);
 const clipStore = useClips();
 const { clips } = storeToRefs(clipStore);
-const { add, remove, move, encode, saveLocal: saveToLocal } = clipStore;
+const { add, remove, move, encode } = clipStore;
 const dragging = ref(null);
 const shareInput = ref(null);
 
@@ -115,8 +113,4 @@ function copyLink() {
   document.execCommand('copy');
 }
 
-function saveLocal() {
-  saveToLocal();
-  alert('Playlist saved');
-}
 </script>
