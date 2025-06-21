@@ -4,8 +4,10 @@
     <div id="player2" class="w-full aspect-video mb-2" style="display:none"></div>
     <ProgressBar class="mt-2" />
     <div class="mt-2 space-x-2">
+      <button @click="prevClip" class="bg-gray-500 text-white px-2 py-1">Prev</button>
       <button @click="play" class="bg-green-500 text-white px-4 py-1">Play</button>
       <button @click="pause" class="bg-gray-500 text-white px-4 py-1">Pause</button>
+      <button @click="nextClip" class="bg-gray-500 text-white px-2 py-1">Next</button>
     </div>
   </div>
 </template>
@@ -27,6 +29,7 @@ const playing = ref(false)
 let apiReady = false
 let endChecker = null
 const currentPlayer = ref(0)
+let lastPrevPress = 0
 
 function loadAPI() {
   return new Promise(resolve => {
@@ -63,15 +66,6 @@ function createPlayers() {
 
 function handleState(event) {
   if (event.data === YT.PlayerState.PAUSED) {
-    if (activePlayer.value && activePlayer.value.getCurrentTime) {
-      const list = Array.isArray(clips.value) ? clips.value : []
-      const clip = list[current.value]
-      if (clip) {
-        const t = activePlayer.value.getCurrentTime()
-        const elapsed = offsets()[current.value] + (t - clip.start)
-        setProgress(elapsed)
-      }
-    }
     pauseTracking()
     playing.value = false
   }
@@ -173,6 +167,40 @@ function pause() {
     pauseTracking()
     playing.value = false
   }
+}
+
+function nextClip() {
+  const idx = current.value + 1
+  if (idx < clips.value.length) {
+    setProgress(offsets()[idx])
+    playSegment(idx)
+    playing.value = true
+    resumeTracking()
+  }
+}
+
+function prevClip() {
+  const now = Date.now()
+  if (now - lastPrevPress < 2000) {
+    if (current.value > 0) {
+      const idx = current.value - 1
+      setProgress(offsets()[idx])
+      playSegment(idx)
+    } else {
+      setProgress(0)
+      playSegment(0)
+    }
+  } else {
+    const list = Array.isArray(clips.value) ? clips.value : []
+    const clip = list[current.value]
+    if (clip && activePlayer.value?.seekTo) {
+      activePlayer.value.seekTo(clip.start, true)
+      setProgress(offsets()[current.value])
+    }
+  }
+  playing.value = true
+  resumeTracking()
+  lastPrevPress = now
 }
 
 async function startPlaylist() {

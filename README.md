@@ -8,7 +8,7 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
 3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
-5. **Play** – Use the Play button to watch the combined result or Pause to stop. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking.
+5. **Play** – Use the Play button to watch the combined result or Pause to stop. Skip forward or back with Next/Prev buttons. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking. Using YouTube's own controls while a video plays does not update the custom bar until **Play** is pressed again.
 6. **Share** – A readonly input field with a copy button encodes your clips into the URL. A short‑link option can be added later.
 
 This project is built with Vite, Vue 3 and Tailwind CSS. Clips are stored in an array using the format:
@@ -28,6 +28,8 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 - **Segment selection** – start/end times with validation so end must be greater than start.
 - **Playback sequencing** – uses the YouTube Iframe API to queue clips and automatically jump to the next section when one finishes.
 - **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
+- **Skip controls** – Next and Prev buttons jump between clips. The Prev button resets the current clip on first press and moves back if pressed again within two seconds.
+- **Custom progress** – the bar pauses when the YouTube progress is dragged so manual seeking doesn't affect splice playback.
 - **Sharing** – generates a link containing your clip list so others can view the same splice or load it directly.
 - **Drag to reorder** – rearrange clips in the list using standard drag-and-drop.
 

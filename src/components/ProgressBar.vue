@@ -50,6 +50,10 @@ onMounted(() => {
     if (player?.value && clip && player.value.getCurrentTime) {
       const t = player.value.getCurrentTime()
       const elapsed = offsets()[current.value] + (t - clip.start)
+      if (Math.abs(elapsed - progress.value) > 1) {
+        pauseTracking()
+        return
+      }
       setProgress(elapsed)
     }
   }, 500)
