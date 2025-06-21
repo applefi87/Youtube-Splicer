@@ -20,6 +20,10 @@ export const useClips = defineStore('clips', () => {
     clips.value.push(clip);
   }
 
+  function setClips(list) {
+    clips.value = JSON.parse(JSON.stringify(list));
+  }
+
   function remove(index) {
     clips.value.splice(index, 1);
   }
@@ -91,6 +95,7 @@ export const useClips = defineStore('clips', () => {
     setCurrent,
     reset,
     move,
+    setClips,
     encode,
     loadEncoded,
     progress,

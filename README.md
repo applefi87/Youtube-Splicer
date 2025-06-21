@@ -4,11 +4,11 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 
 ## Usage
 
-1. **Add a clip** – Paste a YouTube URL. The app extracts the video ID and shows a thumbnail preview.
-2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
-3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items.
+1. **Add a clip** – Paste a YouTube URL or just the video ID. A thumbnail preview will appear.
+2. **Set the range** – Enter the start and end times in seconds for the portion you want to include. Each clip must be at least one second long.
+3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items. Use **Save** to apply changes or **Back** to restore the current playlist.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
-5. **Play** – Use the Play button to watch the combined result or Pause to stop. Skip forward or back with Next/Prev buttons. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking. Using YouTube's own controls while a video plays does not update the custom bar until **Play** is pressed again.
+5. **Play** – Use the Play button to watch the combined result or Pause to stop. Skip forward or back with Next/Prev buttons. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking. If you scrub the built‑in YouTube bar, the custom progress pauses and resumes automatically once the video starts playing again.
 6. **Share** – A readonly input field with a copy button encodes your clips into the URL. A short‑link option can be added later.
 
 This project is built with Vite, Vue 3 and Tailwind CSS. Clips are stored in an array using the format:
@@ -24,12 +24,13 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 
 ### Features
 
-- **Video input and management** – accepts different forms of YouTube URLs and shows thumbnails.
-- **Segment selection** – start/end times with validation so end must be greater than start.
+- **Video input and management** – accepts either full YouTube URLs or bare video IDs and shows thumbnails.
+- **Segment selection** – start/end times with validation so end must be greater than start and each clip lasts at least one second.
 - **Playback sequencing** – uses the YouTube Iframe API to queue clips and automatically jump to the next section when one finishes.
 - **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
 - **Skip controls** – Next and Prev buttons jump between clips. The Prev button resets the current clip on first press and moves back if pressed again within two seconds.
-- **Custom progress** – the bar pauses when the YouTube progress is dragged so manual seeking doesn't affect splice playback.
+- **Custom progress** – the bar pauses when the YouTube progress is dragged so manual seeking doesn't affect splice playback and resumes once the video plays.
+- **Save or revert** – edit clips freely and press **Save** to restart the playlist or **Back** to discard changes.
 - **Sharing** – generates a link containing your clip list so others can view the same splice or load it directly.
 - **Drag to reorder** – rearrange clips in the list using standard drag-and-drop.
 

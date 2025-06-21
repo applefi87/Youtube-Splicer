@@ -68,6 +68,9 @@ function handleState(event) {
   if (event.data === YT.PlayerState.PAUSED) {
     pauseTracking()
     playing.value = false
+  } else if (event.data === YT.PlayerState.PLAYING) {
+    resumeTracking()
+    playing.value = true
   }
 }
 
@@ -216,6 +219,7 @@ async function startPlaylist() {
     }, 50)
   })
   reset()
+  setProgress(0)
   currentPlayer.value = 0
   playSegment(0)
   resumeTracking()
@@ -224,6 +228,7 @@ async function startPlaylist() {
 
 provide('ytPlayer', activePlayer)
 provide('playSegment', playSegment)
+provide('startPlaylist', startPlaylist)
 
 onMounted(() => {
   if (clips.value.length) startPlaylist()
