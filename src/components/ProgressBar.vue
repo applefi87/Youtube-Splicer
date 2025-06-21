@@ -5,29 +5,40 @@
 </template>
 
 <script setup>
-import { onMounted, ref, inject } from 'vue';
+import { onMounted, ref, inject, onBeforeUnmount } from 'vue';
 import { useClips } from '../stores/clips';
+import { storeToRefs } from 'pinia';
 
-const { clips, current } = useClips();
+const clipStore = useClips();
+const { clips, current } = storeToRefs(clipStore);
 const percent = ref(0);
 const player = inject('ytPlayer');
+let timer = null;
 
 onMounted(() => {
-  setInterval(() => {
-    const clip = clips.value[current.value];
+  timer = setInterval(() => {
+    const list = Array.isArray(clips.value) ? clips.value : []
+    const clip = list[current.value]
     if (player?.value && clip && player.value.getCurrentTime) {
-      const t = player.value.getCurrentTime();
-      percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100;
+      const t = player.value.getCurrentTime()
+      percent.value = ((t - clip.start) / (clip.end - clip.start)) * 100
     }
-  }, 500);
-});
+  }, 500)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timer)
+})
 
 function seek(e) {
   if (!player?.value) return;
   const rect = e.currentTarget.getBoundingClientRect();
   const ratio = (e.clientX - rect.left) / rect.width;
-  const clip = clips.value[current.value];
-  const sec = clip.start + ratio * (clip.end - clip.start);
-  player.value.seekTo(sec, true);
+  const list = Array.isArray(clips.value) ? clips.value : []
+  const clip = list[current.value]
+  if (clip) {
+    const sec = clip.start + ratio * (clip.end - clip.start)
+    player.value.seekTo(sec, true)
+  }
 }
 </script>
