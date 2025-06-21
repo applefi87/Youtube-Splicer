@@ -17,5 +17,6 @@ if (encoded) {
 } else {
   store.loadLocal();
 }
+store.loadProgress();
 
 app.mount('#app');

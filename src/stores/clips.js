@@ -4,6 +4,7 @@ import { ref } from 'vue';
 export const useClips = defineStore('clips', () => {
   const clips = ref([]);
   const current = ref(0);
+  const progress = ref(0);
 
   function move(oldIndex, newIndex) {
     if (oldIndex === newIndex) return;
@@ -70,6 +71,20 @@ export const useClips = defineStore('clips', () => {
     }
   }
 
+  function setProgress(sec) {
+    progress.value = sec;
+    try {
+      localStorage.setItem('ytsplicer-progress', String(sec));
+    } catch (e) {
+      console.error('Failed to save progress', e);
+    }
+  }
+
+  function loadProgress() {
+    const s = localStorage.getItem('ytsplicer-progress');
+    if (s) progress.value = Number(s) || 0;
+  }
+
   const totalDuration = () =>
     clips.value.reduce((sum, c) => sum + (c.end - c.start), 0);
 
@@ -96,6 +111,9 @@ export const useClips = defineStore('clips', () => {
     loadEncoded,
     saveLocal,
     loadLocal,
+    progress,
+    setProgress,
+    loadProgress,
     totalDuration,
     offsets
   };

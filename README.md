@@ -6,10 +6,10 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 
 1. **Add a clip** – Paste a YouTube URL. The app extracts the video ID and shows a thumbnail preview.
 2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
-3. **Arrange clips** – Add as many segments as you like. Drag the buttons to reorder or remove items from the list. Press **Save** to store the current playlist.
+3. **Arrange clips** – Add as many segments as you like. Each entry shows editable ID, start and end fields. Drag the icon to reorder or remove items. Use **Save** (above the share box) to store your playlist locally.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
-5. **Play** – Press play to watch the combined result directly in the page. The progress bar shows dark lines for each clip and a red dot for the current time. Dragging the dot displays a timestamp and preview image.
-6. **Share** – There's a readonly input with a copy button that generates a link encoding your clips so others can open the same splice. A short‑link option can be added later.
+5. **Play** – Press play to watch the combined result. Dragging the progress handle pauses playback; press **Play** again to continue from that spot. The bar displays clip boundaries, a red dot and a thumbnail preview while seeking.
+6. **Share** – Below the **Save** button is a readonly input with a copy button that encodes your clips into the URL. A short‑link option can be added later.
 
 This project is built with Vite, Vue 3 and Tailwind CSS. Clips are stored in an array using the format:
 
@@ -30,6 +30,7 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 - **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
 - **Sharing** – generates a link containing your clip list so others can view the same splice or load it directly.
 - **Local save** – store your playlist in the browser and restore it automatically when you return.
+- **Watch progress** – the last watched time is saved so you can resume later.
 - **Drag to reorder** – rearrange clips in the list using standard drag-and-drop.
 
 ### Development

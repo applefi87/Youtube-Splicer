@@ -20,22 +20,32 @@
       <li
         v-for="(clip, i) in clips"
         :key="i"
-        class="flex items-center space-x-2"
+        class="flex items-center space-x-2 p-1 group hover:bg-gray-100"
         draggable="true"
         @dragstart="dragStart(i)"
         @dragover.prevent
         @drop="drop(i)"
       >
+        <span class="cursor-move text-gray-500 group-hover:text-gray-700">&#x2630;</span>
         <img :src="thumb(clip.id)" class="w-20 h-12 object-cover" />
-        <span class="flex-1">{{ clip.id }} [{{ clip.start }}-{{ clip.end }}]</span>
+        <input v-model="clip.id" class="border p-1 w-28" />
+        <label class="text-sm">Start:</label>
+        <input v-model.number="clip.start" type="number" class="border p-1 w-16" />
+        <label class="text-sm">End:</label>
+        <input v-model.number="clip.end" type="number" class="border p-1 w-16" />
         <button @click="remove(i)" class="text-red-500">x</button>
       </li>
     </ul>
 
-    <div v-if="shareUrl" class="mt-4 flex items-center space-x-2">
+    <button
+      v-if="clips.length"
+      @click="saveLocal"
+      class="bg-green-500 text-white px-2 py-1 mt-4"
+    >Save</button>
+
+    <div v-if="shareUrl" class="mt-2 flex items-center space-x-2">
       <input ref="shareInput" type="text" readonly :value="shareUrl" class="flex-1 border p-1" />
       <button @click="copyLink" class="bg-gray-200 px-2 py-1">Copy</button>
-      <button @click="saveLocal" class="bg-green-500 text-white px-2 py-1">Save</button>
     </div>
   </div>
 </template>

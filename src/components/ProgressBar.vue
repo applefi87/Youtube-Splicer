@@ -30,7 +30,7 @@ import { storeToRefs } from 'pinia';
 
 const clipStore = useClips();
 const { clips, current } = storeToRefs(clipStore);
-const { offsets, totalDuration } = clipStore;
+const { offsets, totalDuration, setProgress } = clipStore;
 const percent = ref(0);
 const player = inject('ytPlayer');
 const playSegment = inject('playSegment');
@@ -47,6 +47,7 @@ onMounted(() => {
       const t = player.value.getCurrentTime()
       const elapsed = offsets()[current.value] + (t - clip.start)
       percent.value = (elapsed / totalDuration()) * 100
+      setProgress(elapsed)
     }
   }, 500)
 })
@@ -85,6 +86,9 @@ function updatePreview(clientX) {
 function dragStart(e) {
   dragging = true
   preview.value.show = true
+  if (player?.value && player.value.pauseVideo) {
+    player.value.pauseVideo()
+  }
   updatePreview(e.clientX)
   document.addEventListener('mousemove', dragMove)
   document.addEventListener('mouseup', dragEnd)
@@ -101,17 +105,17 @@ function dragEnd(e) {
   preview.value.show = false
   document.removeEventListener('mousemove', dragMove)
   document.removeEventListener('mouseup', dragEnd)
-  seekAtPosition(e.clientX)
+  seekAtPosition(e.clientX, false)
 }
 
-function seekAtPosition(clientX) {
+function seekAtPosition(clientX, play = true) {
   if (!player?.value || !bar.value) return
   const rect = bar.value.getBoundingClientRect()
   const ratio = (clientX - rect.left) / rect.width
-  seekAt(ratio)
+  seekAt(ratio, play)
 }
 
-function seekAt(ratio) {
+function seekAt(ratio, play = true) {
   const list = Array.isArray(clips.value) ? clips.value : []
   const target = ratio * totalDuration()
   let acc = 0
@@ -123,6 +127,10 @@ function seekAt(ratio) {
       }
       const sec = list[i].start + (target - acc)
       player.value.seekTo(sec, true)
+      if (!play && player.value.pauseVideo) {
+        player.value.pauseVideo()
+      }
+      setProgress(target)
       break
     }
     acc += dur
