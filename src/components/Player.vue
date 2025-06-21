@@ -132,6 +132,7 @@ async function startPlaylist() {
 }
 
 provide('ytPlayer', activePlayer)
+provide('playSegment', playSegment)
 
 onMounted(() => {
   if (clips.value.length) startPlaylist()

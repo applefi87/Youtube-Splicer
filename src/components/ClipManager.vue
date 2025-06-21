@@ -17,15 +17,25 @@
     </form>
 
   <ul class="mt-4 space-y-2">
-      <li v-for="(clip, i) in clips" :key="i" class="flex items-center space-x-2">
+      <li
+        v-for="(clip, i) in clips"
+        :key="i"
+        class="flex items-center space-x-2"
+        draggable="true"
+        @dragstart="dragStart(i)"
+        @dragover.prevent
+        @drop="drop(i)"
+      >
         <img :src="thumb(clip.id)" class="w-20 h-12 object-cover" />
-        <span>{{ clip.id }} [{{ clip.start }}-{{ clip.end }}]</span>
+        <span class="flex-1">{{ clip.id }} [{{ clip.start }}-{{ clip.end }}]</span>
         <button @click="remove(i)" class="text-red-500">x</button>
       </li>
     </ul>
 
-    <div v-if="shareUrl" class="mt-4">
-      <input type="text" readonly :value="shareUrl" class="w-full border p-1" />
+    <div v-if="shareUrl" class="mt-4 flex items-center space-x-2">
+      <input ref="shareInput" type="text" readonly :value="shareUrl" class="flex-1 border p-1" />
+      <button @click="copyLink" class="bg-gray-200 px-2 py-1">Copy</button>
+      <button @click="saveLocal" class="bg-green-500 text-white px-2 py-1">Save</button>
     </div>
   </div>
 </template>
@@ -40,15 +50,13 @@ const start = ref(0);
 const end = ref(0);
 const clipStore = useClips();
 const { clips } = storeToRefs(clipStore);
-const { add, remove } = clipStore;
+const { add, remove, move, encode, saveLocal: saveToLocal } = clipStore;
+const dragging = ref(null);
+const shareInput = ref(null);
 
 const shareUrl = computed(() => {
   if (!clips.value.length) return '';
-  const dataStr = clips.value
-    .map(c => `${c.id},${c.start},${c.end}`)
-    .join('|');
-  const encoded = btoa(unescape(encodeURIComponent(dataStr)));
-  return `${location.origin}${location.pathname}?data=${encoded}`;
+  return `${location.origin}${location.pathname}?data=${encode()}`;
 });
 
 function extractId(link) {
@@ -79,5 +87,26 @@ function addClip() {
     start.value = 0;
     end.value = 0;
   }
+}
+
+function dragStart(i) {
+  dragging.value = i;
+}
+
+function drop(i) {
+  if (dragging.value === null) return;
+  move(dragging.value, i);
+  dragging.value = null;
+}
+
+function copyLink() {
+  if (!shareInput.value) return;
+  shareInput.value.select();
+  document.execCommand('copy');
+}
+
+function saveLocal() {
+  saveToLocal();
+  alert('Playlist saved');
 }
 </script>

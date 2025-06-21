@@ -6,10 +6,10 @@ YouTube Splicer lets you combine several portions of different YouTube videos an
 
 1. **Add a clip** – Paste a YouTube URL. The app extracts the video ID and shows a thumbnail preview.
 2. **Set the range** – Enter the start and end times in seconds for the portion you want to include.
-3. **Arrange clips** – Add as many segments as you like. Drag to reorder or remove items from the list.
+3. **Arrange clips** – Add as many segments as you like. Drag the buttons to reorder or remove items from the list. Press **Save** to store the current playlist.
 4. **Player at the top** – The page always displays a player area above the list. It stays empty until you add the first clip.
-5. **Play** – Press play to watch the combined result directly in the page.
-6. **Share** – Generate a shareable link that encodes your clip list in the URL so others can view the same splice. A short‑link option can be added later.
+5. **Play** – Press play to watch the combined result directly in the page. The progress bar shows dark lines for each clip and a red dot for the current time. Dragging the dot displays a timestamp and preview image.
+6. **Share** – There's a readonly input with a copy button that generates a link encoding your clips so others can open the same splice. A short‑link option can be added later.
 
 This project is built with Vite, Vue 3 and Tailwind CSS. Clips are stored in an array using the format:
 
@@ -27,8 +27,10 @@ When you click **Share**, this array is encoded (JSON → `id,start,end|…` →
 - **Video input and management** – accepts different forms of YouTube URLs and shows thumbnails.
 - **Segment selection** – start/end times with validation so end must be greater than start.
 - **Playback sequencing** – uses the YouTube Iframe API to queue clips and automatically jump to the next section when one finishes.
-- **Progress bar** – displays a bar with markers showing where each segment starts and allows seeking.
-- **Sharing** – generates a link containing your clip list so others can view the same splice.
+- **Progress bar** – displays progress across the full playlist with segment markers, a draggable handle and thumbnail preview.
+- **Sharing** – generates a link containing your clip list so others can view the same splice or load it directly.
+- **Local save** – store your playlist in the browser and restore it automatically when you return.
+- **Drag to reorder** – rearrange clips in the list using standard drag-and-drop.
 
 ### Development
 
@@ -67,7 +69,7 @@ The project implements the features outlined in the original requirements:
 - **影片輸入與管理** – paste various YouTube URL formats; the ID is extracted and a thumbnail is shown.
 - **區段設定** – start/end inputs with validation and an option to reset to the full video length.
 - **播放拼接** – clips play sequentially using the Iframe API.
-- **播放控制與進度條標記** – basic controls and a progress bar marked with clip boundaries.
+- **播放控制與進度條標記** – basic controls with a progress bar, draggable handle and thumbnail preview.
 - **預覽縮圖顯示** – video thumbnails appear in the clip list.
 - **分享機制** – encoded parameter URLs, with short links available via a simple API.
 - **響應式設計** – layout adapts from desktop to mobile.
