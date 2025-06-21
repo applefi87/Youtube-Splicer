@@ -228,7 +228,6 @@ async function startPlaylist() {
 
 provide('ytPlayer', activePlayer)
 provide('playSegment', playSegment)
-provide('startPlaylist', startPlaylist)
 
 onMounted(() => {
   if (clips.value.length) startPlaylist()
@@ -237,4 +236,6 @@ onMounted(() => {
 watch(clips, (n, o) => {
   if (n.length && !o.length) startPlaylist()
 })
+
+defineExpose({ startPlaylist })
 </script>

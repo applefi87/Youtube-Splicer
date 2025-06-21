@@ -3,15 +3,32 @@
     <form @submit.prevent="addClip" class="flex items-end space-x-2">
       <div>
         <label class="block text-sm">YouTube URL</label>
-        <input v-model="url" type="text" class="border p-1" />
+        <input
+          v-model="url"
+          @blur="url = urlToId(url)"
+          type="text"
+          class="border p-1"
+        />
       </div>
       <div>
         <label class="block text-sm">Start (s)</label>
-        <input v-model.number="start" type="number" min="1" step="1" class="border p-1 w-20" />
+        <input
+          v-model.number="start"
+          type="number"
+          min="1"
+          step="1"
+          :class="['border p-1 w-20', start < 1 ? 'border-red-500' : '']"
+        />
       </div>
       <div>
         <label class="block text-sm">End (s)</label>
-        <input v-model.number="end" type="number" min="1" step="1" class="border p-1 w-20" />
+        <input
+          v-model.number="end"
+          type="number"
+          min="1"
+          step="1"
+          :class="['border p-1 w-20', addInvalid ? 'border-red-500' : '']"
+        />
       </div>
       <button type="submit" class="bg-blue-500 text-white px-2 py-1">Add</button>
     </form>
@@ -62,6 +79,7 @@ import { urlToId } from '../utils/youtube';
 const url = ref('');
 const start = ref(1);
 const end = ref(1);
+const addInvalid = computed(() => start.value < 1 || end.value < 1 || end.value <= start.value);
 const clipStore = useClips();
 const { clips } = storeToRefs(clipStore);
 const { encode, setClips } = clipStore;

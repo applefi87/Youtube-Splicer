@@ -1,5 +1,12 @@
 <template>
-  <div class="h-2 bg-gray-300 relative" ref="bar" @click="seek($event)">
+  <div
+    class="h-2 bg-gray-300 relative"
+    ref="bar"
+    @click="seek($event)"
+    @mousemove="hoverMove"
+    @mouseenter="hoverEnter"
+    @mouseleave="hoverLeave"
+  >
     <div class="h-full bg-red-600" :style="{ width: percent + '%' }"></div>
     <div
       v-for="(off, idx) in offsets().slice(1)"
@@ -114,6 +121,25 @@ function dragEnd(e) {
   document.removeEventListener('mousemove', dragMove)
   document.removeEventListener('mouseup', dragEnd)
   seekAtPosition(e.clientX, false)
+}
+
+function hoverEnter(e) {
+  if (!dragging) {
+    preview.value.show = true
+    updatePreview(e.clientX)
+  }
+}
+
+function hoverMove(e) {
+  if (!dragging && preview.value.show) {
+    updatePreview(e.clientX)
+  }
+}
+
+function hoverLeave() {
+  if (!dragging) {
+    preview.value.show = false
+  }
 }
 
 function seekAtPosition(clientX, play = true) {
